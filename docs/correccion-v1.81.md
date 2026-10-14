@@ -69,13 +69,14 @@ Así que solo cuentan las velas de 09:00 y 10:00. La vela de 11:00 nunca se eval
 
 ## Resultado de la comprobación en el Strategy Tester
 
-Se pasaron la 1.80 y la 1.81 por el Strategy Tester con EUR/USD H1, de enero de 2021 a enero de 2026, en las mismas condiciones. **De 183 operaciones, 182 son idénticas** en hora, precio y resultado. El resultado total cambia en 6 céntimos sobre 10.000 de capital.
+Se pasaron la 1.80 y la 1.81 por el Strategy Tester con EUR/USD H1, de enero de 2021 a enero de 2026, en las mismas condiciones. **De 183 operaciones, 182 son idénticas** en hora, precio y resultado. El resultado total cambia en céntimos sobre 10.000 de capital.
 
 | | Versión 1.80 | Versión 1.81 |
 | --- | --- | --- |
 | Operaciones | 183 | 183 |
 | Operaciones con beneficio | 70 | 70 |
-| Beneficio total | 1.396,35 | 1.396,41 |
+| Beneficio bruto (antes de comisiones) | 1.396,35 | 1.396,41 |
+| Beneficio neto (después de comisiones) | 515,28 | 515,12 |
 | Días con compra y venta a la vez (fallo 3) | 0 | 0 |
 
 **La única diferencia, el 3 de enero de 2022, es el fallo 1 en otra forma.** Ese lunes, tras Año Nuevo, el mercado no abrió a las 00:00. La 1.80 buscaba "la vela de las 00:00" y, al no encontrarla, empezaba a contar desde la última vela del viernes 31 de diciembre. El rango de Asia de ese día incluía precios del año anterior. El objetivo de la compra quedó en 1,13864 en lugar de 1,13784, y la entrada se retrasó 3 segundos. Las dos versiones perdieron igual (cerró en stop), así que el impacto fue mínimo. Aun así, confirma que la 1.81 mide el rango como lo defines tú también en días festivos.

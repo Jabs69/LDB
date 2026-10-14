@@ -10,6 +10,8 @@ param(
     [int]$Model       = 4,                       # 4 = cada tick basado en ticks reales
     [int]$Delay       = 0,                       # 0 = sin delay, -1 = delay aleatorio, >0 = ms fijos
     [int]$Deposit     = 10000,
+    [int]$Optimization = 0,                      # 0 = prueba simple, 1 = completa lenta, 2 = genética
+    [string[]]$Inputs = @(),                     # líneas de [TesterInputs]; sin ellas se usan los valores por defecto
     [string]$Terminal = "C:\Program Files\MetaTrader 5 IC Markets Global",
     [string]$DataDir  = "$env:APPDATA\MetaQuotes\Terminal\010E047102812FC0C18890992854220E"
 )
@@ -37,7 +39,8 @@ Symbol=$Symbol
 Period=$Period
 Model=$Model
 ExecutionMode=$Delay
-Optimization=0
+Optimization=$Optimization
+OptimizationCriterion=0
 FromDate=$From
 ToDate=$To
 Deposit=$Deposit
@@ -47,11 +50,11 @@ Visual=0
 Report=reports\$Name
 ReplaceReport=1
 ShutdownTerminal=1
-"@ | Set-Content $ini -Encoding ASCII
+"@ + $(if ($Inputs) { "`r`n[TesterInputs]`r`n" + ($Inputs -join "`r`n") } else { "" }) | Set-Content $ini -Encoding ASCII
 
 # 3. Ejecutar y esperar a que el terminal se cierre
 $inicio = Get-Date
 Start-Process -FilePath (Join-Path $Terminal "terminal64.exe") -ArgumentList "/config:`"$ini`"" -Wait
-$informe = Join-Path $reportsDir "$Name.htm"
+$informe = Join-Path $reportsDir ("$Name" + $(if ($Optimization) { ".xml" } else { ".htm" }))
 if (-not (Test-Path $informe) -or (Get-Item $informe).LastWriteTime -lt $inicio) { throw "No se generó el informe $informe" }
 Write-Host ("Informe: {0}  ({1:N1} min)" -f $informe, ((Get-Date) - $inicio).TotalMinutes)
