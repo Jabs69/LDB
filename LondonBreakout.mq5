@@ -1,6 +1,6 @@
 #property copyright "Copyright 2023, Trading Bot"
 #property link      "https://mql5.com"
-#property version   "1.80"
+#property version   "1.81"
 #property strict
 #include <Trade\Trade.mqh>
 
@@ -56,8 +56,8 @@ void OnTick() {
    GestionarPosiciones();
    
    if(dt.day != diaActual) {
-      diaActual = dt.day; 
-      operadoHoy = false; 
+      diaActual = dt.day;
+      operadoHoy = YaOperoHoy(); // Sobrevive a reinicios del EA o del terminal
       maxAsia = 0; 
       minAsia = 0;
       ObjectsDeleteAll(0, "AsiaBox_"); // Limpiar cuadros del día anterior
@@ -68,7 +68,7 @@ void OnTick() {
    // 1. Calcular rango y DIBUJAR cuando termina Asia
    if(dt.hour >= InpHoraFinAsia && maxAsia == 0) {
       CalcularRangoAsia();
-      DibujarRangoAsia();
+      if(maxAsia > 0) DibujarRangoAsia();
    }
 
    // 2. Filtro de ventana de tiempo (Londres)
@@ -109,7 +109,8 @@ void VerificarFakeoutH1() {
       }
    }
 
-   if(lH1 < minAsia && cH1 > minAsia) {
+   // Si ya se vendió con esta misma vela, no abrir también la compra
+   if(!operadoHoy && lH1 < minAsia && cH1 > minAsia) {
       double mechaInf = MathMin(oH1, cH1) - lH1;
       if(mechaInf > (cuerpo * InpFactorMecha)) {
          double sl = NormalizeDouble(lH1 - (_Point * 10), _Digits);      
@@ -145,11 +146,36 @@ void DibujarRangoAsia() {
 void CalcularRangoAsia() {
    MqlDateTime dt; TimeCurrent(dt);
    dt.hour = InpHoraInicioAsia; dt.min = 0; dt.sec = 0; datetime hIni = StructToTime(dt);
-   dt.hour = InpHoraFinAsia; datetime hFin = StructToTime(dt);
-   int start = iBarShift(_Symbol, PERIOD_H1, hIni);
-   int end   = iBarShift(_Symbol, PERIOD_H1, hFin);
-   maxAsia = iHigh(_Symbol, PERIOD_H1, iHighest(_Symbol, PERIOD_H1, MODE_HIGH, start-end+1, end));
-   minAsia = iLow(_Symbol, PERIOD_H1, iLowest(_Symbol, PERIOD_H1, MODE_LOW, start-end+1, end));
+   dt.hour = InpHoraFinAsia; datetime hFin = StructToTime(dt) - 1; // Excluir la vela que abre al terminar Asia
+
+   // Solo velas H1 que abren dentro de [inicio, fin) de Asia, todas ya cerradas
+   MqlRates rates[];
+   int copiados = CopyRates(_Symbol, PERIOD_H1, hIni, hFin, rates);
+   if(copiados <= 0) return; // Se reintenta en el siguiente tick
+
+   double maxR = rates[0].high, minR = rates[0].low;
+   for(int i = 1; i < copiados; i++) {
+      if(rates[i].high > maxR) maxR = rates[i].high;
+      if(rates[i].low  < minR) minR = rates[i].low;
+   }
+   maxAsia = maxR;
+   minAsia = minR;
+}
+
+//+------------------------------------------------------------------+
+//| ¿Ya abrió este EA una operación hoy? (consulta el historial)     |
+//+------------------------------------------------------------------+
+bool YaOperoHoy() {
+   MqlDateTime dt; TimeCurrent(dt);
+   dt.hour = 0; dt.min = 0; dt.sec = 0;
+   if(!HistorySelect(StructToTime(dt), TimeCurrent() + 60)) return false;
+   for(int i = HistoryDealsTotal() - 1; i >= 0; i--) {
+      ulong deal = HistoryDealGetTicket(i);
+      if(HistoryDealGetString(deal, DEAL_SYMBOL) == _Symbol &&
+         HistoryDealGetInteger(deal, DEAL_MAGIC) == InpMagicNumber &&
+         HistoryDealGetInteger(deal, DEAL_ENTRY) == DEAL_ENTRY_IN) return true;
+   }
+   return false;
 }
 
 void GestionarPosiciones() {
