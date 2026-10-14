@@ -67,14 +67,26 @@ Así que solo cuentan las velas de 09:00 y 10:00. La vela de 11:00 nunca se eval
 
 **Por qué no lo he cambiado.** Los parámetros óptimos (incluida la ventana de 3 horas) se encontraron con este comportamiento, y la demo coincide con el tester. Si lo cambio, el robot opera distinto a lo que validaste. Si tu idea era evaluar tres velas (09:00, 10:00 y 11:00), la solución es subir la ventana a 4 horas y volver a pasar el backtest. Es un cambio de estrategia, no una corrección.
 
-## Cómo comprobar que nada cambió y próximos pasos
+## Resultado de la comprobación en el Strategy Tester
 
-En el Strategy Tester el robot no se reinicia, así que los fallos 1 y 2 no deberían aparecer. Lo esperado es que la versión 1.81 dé **exactamente las mismas operaciones** que la 1.80 entre enero de 2021 y enero de 2026. La única excepción posible es un día con la vela rara del fallo 3. La versión nueva compila sin errores ni avisos.
+Se pasaron la 1.80 y la 1.81 por el Strategy Tester con EUR/USD H1, de enero de 2021 a enero de 2026, en las mismas condiciones. **De 183 operaciones, 182 son idénticas** en hora, precio y resultado. El resultado total cambia en 6 céntimos sobre 10.000 de capital.
 
-1. Pasar la versión 1.81 por el Strategy Tester con los mismos ajustes de siempre: ticks reales, delay aleatorio y spread del bróker.
-2. Comparar la lista de operaciones con la de la 1.80. Si alguna difiere, revísala: debería ser un día con compra y venta a la vez en la 1.80.
-3. Revisar si la demo tuvo algún día con dos operaciones o algún reinicio del VPS. Podría explicar la única operación que no coincidía con el tester.
-4. Si todo coincide, instalar la 1.81 en la demo, con el robot sin posiciones abiertas.
+| | Versión 1.80 | Versión 1.81 |
+| --- | --- | --- |
+| Operaciones | 183 | 183 |
+| Operaciones con beneficio | 70 | 70 |
+| Beneficio total | 1.396,35 | 1.396,41 |
+| Días con compra y venta a la vez (fallo 3) | 0 | 0 |
+
+**La única diferencia, el 3 de enero de 2022, es el fallo 1 en otra forma.** Ese lunes, tras Año Nuevo, el mercado no abrió a las 00:00. La 1.80 buscaba "la vela de las 00:00" y, al no encontrarla, empezaba a contar desde la última vela del viernes 31 de diciembre. El rango de Asia de ese día incluía precios del año anterior. El objetivo de la compra quedó en 1,13864 en lugar de 1,13784, y la entrada se retrasó 3 segundos. Las dos versiones perdieron igual (cerró en stop), así que el impacto fue mínimo. Aun así, confirma que la 1.81 mide el rango como lo defines tú también en días festivos.
+
+**Condiciones de esta prueba.** Se usaron ticks generados a partir de velas de 1 minuto, sin delay, porque en el PC de pruebas no había una cuenta válida para descargar los ticks reales. Para comparar dos versiones del código es suficiente, porque las dos usan los mismos datos. Las cifras absolutas no son las de tu validación con ticks reales y delay aleatorio, y no deben compararse con ellas.
+
+## Próximos pasos
+
+1. Repetir la comparación con ticks reales cuando haya una cuenta válida en el PC de pruebas. El resultado esperado es el mismo.
+2. Revisar si la demo tuvo algún día con dos operaciones o algún reinicio del VPS. Podría explicar la única operación que no coincidía con el tester.
+3. Instalar la 1.81 en la demo, con el robot sin posiciones abiertas.
 
 **Pendientes por decidir:**
 
