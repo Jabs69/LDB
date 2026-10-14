@@ -32,28 +32,32 @@ class _Tablas(HTMLParser):
             self._celda.append(data)
 
 
-def leer_deals(ruta):
-    """Devuelve las filas de la tabla de deals como diccionarios."""
+def leer_tabla(ruta, marcadores):
+    """Devuelve como diccionarios las filas de la tabla cuya cabecera contiene todos los marcadores."""
     with open(ruta, "rb") as f:
         crudo = f.read()
     texto = crudo.decode("utf-16") if crudo[:2] in (b"\xff\xfe", b"\xfe\xff") else crudo.decode("utf-8", "replace")
     p = _Tablas()
     p.feed(texto)
 
-    cab, deals = None, []
+    cab, filas = None, []
     for fila in p.filas:
         if cab is None:
-            if "Deal" in fila and "Direction" in fila:
+            if all(m in fila for m in marcadores):
                 cab = fila
             continue
         if len(fila) != len(cab):
-            if deals:
+            if filas:
                 break
             continue
-        deals.append(dict(zip(cab, fila)))
+        filas.append(dict(zip(cab, fila)))
     if cab is None:
-        raise ValueError(f"No encontré la tabla de deals en {ruta}")
-    return deals
+        raise ValueError(f"No encontré la tabla {marcadores} en {ruta}")
+    return filas
+
+
+def leer_deals(ruta):
+    return leer_tabla(ruta, ("Deal", "Direction"))
 
 
 def operaciones(deals):
