@@ -56,7 +56,7 @@ Modo "cada tick" con ticks generados. El broker solo tiene ticks reales desde ab
 
 ### 1. ¿La señal es mejor que el azar?
 
-Se hizo con una variante del EA solo para pruebas, `tools/pruebas/LB_pruebas.mq5`. En modo 0 reproduce exactamente la v1.81: las mismas 183 operaciones y el mismo resultado.
+Se hizo con una variante del EA solo para pruebas, `LDB/pruebas/LB_pruebas.mq5`. En modo 0 reproduce exactamente la v1.81: las mismas 183 operaciones y el mismo resultado.
 
 | Prueba | Resultado (5 años) |
 | --- | --- |
@@ -212,12 +212,12 @@ Si pasa los puntos 1 y 2, se sigue en demo con ticks reales, sin cambios, solo c
 
 ```powershell
 # Base y otros pares (cada tick)
-.\tools\run_backtest.ps1 -Source LondonBreakout.mq5 -Name LB_v181_GBPUSD -Symbol GBPUSD
+.\tools\run_backtest.ps1 -Source LDB\LondonBreakout.mq5 -Name LB_v181_GBPUSD -Symbol GBPUSD
 # Dirección contraria y carteras al azar
-.\tools\run_backtest.ps1 -Source tools\pruebas\LB_pruebas.mq5 -Name LB_p_inv -Inputs "InpModo=1"
-.\tools\run_backtest.ps1 -Source tools\pruebas\LB_pruebas.mq5 -Name LB_p_azar -Optimization 1 -Inputs "InpModo=2||2||0||2||N","InpSemilla=1||1||1||300||Y"
+.\tools\run_backtest.ps1 -Source LDB\pruebas\LB_pruebas.mq5 -Name LB_p_inv -Inputs "InpModo=1"
+.\tools\run_backtest.ps1 -Source LDB\pruebas\LB_pruebas.mq5 -Name LB_p_azar -Optimization 1 -Inputs "InpModo=2||2||0||2||N","InpSemilla=1||1||1||300||Y"
 # Barrido de parámetros (repetir con -From 2024.01.01 -To 2026.02.01 -Name LB_opt_OOS)
-.\tools\run_backtest.ps1 -Source LondonBreakout.mq5 -Name LB_opt_IS -From 2021.01.01 -To 2024.01.01 -Model 1 -Optimization 1 -Inputs "InpHoraFinAsia=9||7||1||10||Y","InpHorasVentana=3||2||1||4||Y","InpRatioMinimo=2.4||1.6||0.2||3.2||Y","InpFactorMecha=1.5||1.0||0.25||2.5||Y"
+.\tools\run_backtest.ps1 -Source LDB\LondonBreakout.mq5 -Name LB_opt_IS -From 2021.01.01 -To 2024.01.01 -Model 1 -Optimization 1 -Inputs "InpHoraFinAsia=9||7||1||10||Y","InpHorasVentana=3||2||1||4||Y","InpRatioMinimo=2.4||1.6||0.2||3.2||Y","InpFactorMecha=1.5||1.0||0.25||2.5||Y"
 ```
 
 MT5 debe estar cerrado: el script abre el terminal, corre la prueba y lo cierra.

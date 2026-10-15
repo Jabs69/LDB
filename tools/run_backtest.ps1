@@ -1,5 +1,5 @@
 ﻿# Compila un EA y lo pasa por el Strategy Tester de MT5 sin abrir la interfaz.
-# Uso: .\tools\run_backtest.ps1 -Source LondonBreakout.mq5 -Name LB_v181 [-From 2021.01.01] [-To 2026.02.01] [-Delay 0]
+# Uso: .\tools\run_backtest.ps1 -Source LDB\LondonBreakout.mq5 -Name LB_v181 [-From 2021.01.01] [-To 2026.02.01] [-Delay 0]
 param(
     [Parameter(Mandatory)] [string]$Source,     # archivo .mq5
     [Parameter(Mandatory)] [string]$Name,       # nombre de la corrida (EA compilado e informe)
@@ -24,6 +24,8 @@ New-Item -ItemType Directory -Force $expertsDir, $reportsDir | Out-Null
 # 1. Compilar
 $mq5 = Join-Path $expertsDir "$Name.mq5"
 Copy-Item $Source $mq5 -Force
+$sourceDirectory = Split-Path -Parent (Resolve-Path $Source)
+Get-ChildItem -Path $sourceDirectory -Filter "*.mqh" -File | Copy-Item -Destination $expertsDir -Force
 $log = Join-Path $expertsDir "$Name.log"
 Start-Process -FilePath (Join-Path $Terminal "metaeditor64.exe") -ArgumentList "/compile:`"$mq5`"", "/log:`"$log`"" -Wait
 $resultado = Get-Content $log -Encoding Unicode | Select-String "^Result:"
